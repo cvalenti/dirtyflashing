@@ -2,14 +2,12 @@
 
 # TODO
 # Recovery mode
-# Getopts
-# Usage
 # IP Discovery
 
-usage () {
+usage() {
 cat << _EOF_
-$PROGNAME: A tool for flashing Access Points
-Usage: $PROGNAME flash -s </path/to/binary> -i <ip_address>
+$PROGNAME: A tool for flashing Access Points with USB RLY02
+Usage: $PROGNAME -s </path/to/binary> -i <ip_address>
 
 Options:
   -h              				Print basic help and exit
@@ -18,7 +16,7 @@ Options:
 _EOF_
 }
 
-install_tftp-hpa(){
+install_tftp-hpa() {
   echo -n "tftp-hpa is not installed: do you want to install now? (Y/n) "
   read ans_install
   case $ans_install in
@@ -36,6 +34,24 @@ install_tftp-hpa(){
       exit 1
       ;;
   esac
+}
+
+wait_bootloader() {
+  echo 'In attesa del Bootloader'
+  sleep 12
+}
+
+use_usb_rly() {
+  sudo chmod 777 /dev/ttyACM0
+  stty -F /dev/ttyACM0 raw ispeed 15200 ospeed 15200 cs8 -ignpar -cstopb -echo
+  # All relays on
+  echo 'd' > /dev/ttyACM0
+  sleep 1
+  # Turn relay 1 off
+  echo 'o' > /dev/ttyACM0
+  wait_bootloader
+  # All relays off
+  echo 'n' > /dev/ttyACM0
 }
 
 PROGNAME=${0##*/}
@@ -63,27 +79,13 @@ done
 
 
 if [[ ! `dpkg -l | grep tftp-hpa` ]]; then
-	install_tftp-hpa
+  install_tftp-hpa
 fi
 
 cp $BINPATH `pwd`
 BINFILE=`basename $BINPATH`
 
-sudo chmod 777 /dev/ttyACM0
-
-stty -F /dev/ttyACM0 raw ispeed 15200 ospeed 15200 cs8 -ignpar -cstopb -echo
-
-echo 'd' > /dev/ttyACM0
-
-sleep 1
-
-echo 'o' > /dev/ttyACM0
-
-echo 'In attesa del Bootloader'
-
-sleep 12
-
-echo 'n' > /dev/ttyACM0
+use_usb_rly
 
 tftp -v $IPADDR -m binary -c put $BINFILE
 
