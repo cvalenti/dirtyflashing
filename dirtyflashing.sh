@@ -10,9 +10,9 @@ $PROGNAME: A tool for flashing Access Points with USB RLY02
 Usage: $PROGNAME -s </path/to/binary> -i <ip_address>
 
 Options:
-  -h              				Print basic help and exit
-  -s </path/to/binary>   	Firmware file
-  -i <ip_address>					IP address of your Access Point (default 192.168.1.20)
+  -h                      Print basic help and exit
+  -s </path/to/binary>    Firmware file
+  -i <ip_address>         IP address of your Access Point (default 192.168.1.20)
 _EOF_
 }
 
