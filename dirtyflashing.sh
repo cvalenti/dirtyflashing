@@ -2,16 +2,17 @@
 
 # TODO
 # Recovery mode
-# IP Discovery
+# IP Discovery: check if there is a route for <ip_access>
 
 usage() {
 cat << _EOF_
-$PROGNAME: A tool for flashing Access Points with USB RLY02
-Usage: $PROGNAME -s </path/to/binary> -i <ip_address>
+$PROGNAME: A tool for flashing Access Points using USB RLY02
+Usage: $PROGNAME [OPTIONS]
 
 Options:
   -h                      Print basic help and exit
-  -s </path/to/binary>    Firmware file
+  -s </path/to/binary>    OpenWRT Firmware path
+  -u <URL>                OpenWRT Firmware URL
   -i <ip_address>         IP address of your Access Point (default 192.168.1.20)
 _EOF_
 }
@@ -56,8 +57,10 @@ use_usb_rly() {
 
 PROGNAME=${0##*/}
 IPADDR="192.168.1.20"
+URL=""
+BINPATH=""
 
-while getopts "hs:i:" OPTION; do
+while getopts "hs:i:u:" OPTION; do
   case $OPTION in
     h)
       usage
@@ -65,6 +68,9 @@ while getopts "hs:i:" OPTION; do
       ;;
     s)
       BINPATH=$OPTARG
+      ;;
+    u)
+      URL=$OPTARG
       ;;
     i)
       IPADDR=$OPTARG
@@ -82,11 +88,21 @@ if [[ ! `dpkg -l | grep tftp-hpa` ]]; then
   install_tftp-hpa
 fi
 
-cp $BINPATH `pwd`
-BINFILE=`basename $BINPATH`
+if [ $URL ]; then
+  wget -q $URL -O `pwd`/dirtyflashingfirmware.bin
+  BINFILE=`pwd`/dirtyflashingfirmware.bin
+elif [ $BINPATH ]; then
+  cp $BINPATH `pwd`
+  BINFILE=`basename $BINPATH`
+else
+  echo "Please enter a Firmware file"
+  exit 1
+fi
 
 use_usb_rly
 
 tftp -v $IPADDR -m binary -c put $BINFILE
 
 rm $BINFILE
+
+
