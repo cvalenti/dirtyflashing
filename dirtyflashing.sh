@@ -42,6 +42,16 @@ wait_bootloader() {
   sleep 12
 }
 
+check_ping() {
+  ping -c 1 -W 3 $IPADDR >/dev/null 2>&1
+  RET=$?
+  if [ $RET -ne 0 ]; then
+    echo "Unable to find device, check your IP connection"
+    exit 1
+  fi
+  sleep 0.5
+}
+
 use_usb_rly() {
   sudo chmod 777 /dev/ttyACM0
   stty -F /dev/ttyACM0 raw ispeed 15200 ospeed 15200 cs8 -ignpar -cstopb -echo
@@ -100,6 +110,8 @@ else
 fi
 
 use_usb_rly
+
+check_ping
 
 tftp -v $IPADDR -m binary -c put $BINFILE
 
