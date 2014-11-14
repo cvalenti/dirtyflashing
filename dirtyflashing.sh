@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# TODO
-# Recovery mode
-# IP Discovery: check if there is a route for <ip_access>
-
 usage() {
 cat << _EOF_
 $PROGNAME: A tool for flashing Access Points using USB RLY02
@@ -22,7 +18,6 @@ install_tftp-hpa() {
   read ans_install
   case $ans_install in
     [yY] | [yY][eE][sS])
-      #define distro and install rdesktop
       if [ -f /etc/lsb-release ]; then
         apt-get install tftp-hpa
       else
